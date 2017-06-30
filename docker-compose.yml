@@ -1,0 +1,35 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./logs:/logs
+    command: postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
+    environment:
+      - POSTGRES_USER=playground
+      - POSTGRES_PASSWORD=playground
+    networks:
+      app-network:
+        aliases:
+          - database-host
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - DATABASE_URL=database-host:5432
+      - DATABASE_DB=playground
+      - DATABASE_USER=playground
+      - DATABASE_PASSWORD=playground
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  db-data:
